@@ -14,13 +14,11 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Container utama */
     .container {
       display: flex;
       height: 100vh;
     }
 
-    /* Sidebar kiri */
     .sidebar {
       width: 30%;
       padding: 20px;
@@ -50,13 +48,11 @@
       font-weight: bold;
     }
 
-    /* Map */
     #map {
       width: 70%;
       height: 100%;
     }
 
-    /* Responsive */
     @media (max-width: 768px) {
       .container {
         flex-direction: column;
@@ -111,7 +107,9 @@
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
 <script>
+  // Inisialisasi peta
   var map = L.map('map').setView([-2.5, 118], 5);
 
   // Basemap
@@ -119,10 +117,36 @@
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // Contoh marker
-  L.marker([5.9, 95.2])
-    .addTo(map)
-    .bindPopup("Pulau Kecil Terluar – Contoh Lokasi");
+  // ================================
+  // LOAD DATA SHP (via GeoJSON)
+  // ================================
+  fetch("PPKT.geojson")
+    .then(response => response.json())
+    .then(data => {
+
+      var ppktLayer = L.geoJSON(data, {
+        style: function () {
+          return {
+            color: "#d62828",
+            weight: 2,
+            fillOpacity: 0.5
+          };
+        },
+        onEachFeature: function (feature, layer) {
+          var popupContent = `
+            <b>Nama Pulau:</b> ${feature.properties.nama || "-"}<br>
+            <b>Provinsi:</b> ${feature.properties.provinsi || "-"}<br>
+            <b>Status:</b> ${feature.properties.status || "-"}
+          `;
+          layer.bindPopup(popupContent);
+        }
+      }).addTo(map);
+
+      // Zoom otomatis ke data
+      map.fitBounds(ppktLayer.getBounds());
+
+    })
+    .catch(err => console.error("Gagal memuat GeoJSON:", err));
 </script>
 
 </body>
