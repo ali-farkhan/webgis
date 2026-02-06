@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>WebGIS Pulau-Pulau Kecil Terluar</title>
+  <title>WebGIS Pulau-Pulau Kecil Terluar Indonesia</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -24,7 +24,6 @@
       padding: 20px;
       background: #f5f7f8;
       overflow-y: auto;
-      box-sizing: border-box;
       border-right: 1px solid #ddd;
     }
 
@@ -36,16 +35,6 @@
     .sidebar p {
       font-size: 14px;
       text-align: justify;
-    }
-
-    .sidebar hr {
-      margin: 15px 0;
-    }
-
-    .sidebar a {
-      color: #0b5ed7;
-      text-decoration: none;
-      font-weight: bold;
     }
 
     #map {
@@ -75,29 +64,17 @@
 
     <p>
       WebGIS Pulau-Pulau Kecil Terluar merupakan platform pemetaan berbasis web
-      yang menyediakan data spasial dan informasi geografis mengenai
-      pulau-pulau kecil terluar di wilayah Negara Kesatuan Republik Indonesia (NKRI).
-    </p>
-
-    <p>
-      Platform ini bertujuan untuk mendukung perencanaan wilayah pesisir,
-      pengelolaan sumber daya kelautan, serta penguatan aspek kedaulatan wilayah
-      melalui penyajian data lokasi dan distribusi pulau-pulau kecil terluar
-      secara interaktif.
+      yang menyediakan data spasial pulau-pulau kecil terluar Indonesia
+      untuk mendukung kedaulatan wilayah dan pengelolaan pesisir.
     </p>
 
     <hr>
 
     <p>
       📍 Cakupan Data: Pulau-Pulau Kecil Terluar Indonesia<br>
-      🗺️ Jenis Data: Titik & Poligon Pulau<br>
-      📅 Tahun Data: 2025<br>
-      👨‍💻 Pengembang: Direktorat Pesisir dan Pulau-Pulau Kecil
+      🗺️ Format Data: GeoJSON<br>
+      📅 Tahun Data: 2025
     </p>
-
-    <a href="https://github.com/USERNAME/webgis" target="_blank">
-      🔗 Lihat Proyek di GitHub
-    </a>
   </div>
 
   <!-- MAP -->
@@ -117,36 +94,26 @@
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
-  // ================================
-  // LOAD DATA SHP (via GeoJSON)
-  // ================================
-  fetch("PPKT.geojson")
+  // Load GeoJSON (HASIL KONVERSI SHP)
+  fetch("data/ppkt.geojson")
     .then(response => response.json())
     .then(data => {
-
-      var ppktLayer = L.geoJSON(data, {
-        style: function () {
-          return {
-            color: "#d62828",
-            weight: 2,
-            fillOpacity: 0.5
-          };
+      var layerPPKT = L.geoJSON(data, {
+        style: {
+          color: "#e63946",
+          weight: 2,
+          fillOpacity: 0.5
         },
         onEachFeature: function (feature, layer) {
-          var popupContent = `
-            <b>Nama Pulau:</b> ${feature.properties.nama || "-"}<br>
-            <b>Provinsi:</b> ${feature.properties.provinsi || "-"}<br>
-            <b>Status:</b> ${feature.properties.status || "-"}
-          `;
-          layer.bindPopup(popupContent);
+          layer.bindPopup(
+            "<b>Nama Pulau:</b> " + (feature.properties.nama || "-")
+          );
         }
       }).addTo(map);
 
-      // Zoom otomatis ke data
-      map.fitBounds(ppktLayer.getBounds());
-
-    })
-    .catch(err => console.error("Gagal memuat GeoJSON:", err));
+      // Zoom ke data
+      map.fitBounds(layerPPKT.getBounds());
+    });
 </script>
 
 </body>
