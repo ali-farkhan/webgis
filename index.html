@@ -46,7 +46,7 @@
       width: 100%;
     }
 
-    /* POPUP STYLE */
+    /* POPUP */
     .leaflet-popup-content {
       font-size: 13px;
       line-height: 1.4;
@@ -56,65 +56,90 @@
 
 <body>
 
-  <!-- HEADER -->
-  <div id="header">
-    <img src="LogoKKP.png" id="logo" alt="Logo KKP">
-    <div id="title">Pulau-Pulau Kecil Terluar Indonesia</div>
-  </div>
+<!-- HEADER -->
+<div id="header">
+  <img src="LogoKKP.png" id="logo" alt="Logo KKP">
+  <div id="title">Pulau-Pulau Kecil Terluar Indonesia</div>
+</div>
 
-  <!-- MAP -->
-  <div id="map"></div>
+<!-- MAP -->
+<div id="map"></div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <script>
-    // Inisialisasi Peta
-    var map = L.map('map').setView([-2.5, 118], 5);
+<script>
+  // ===============================
+  // INISIALISASI PETA
+  // ===============================
+  var map = L.map('map').setView([-2.5, 118], 5);
 
-    // Basemap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
 
-    // Fix resize
-    setTimeout(function () {
-      map.invalidateSize();
-    }, 300);
+  setTimeout(() => {
+    map.invalidateSize();
+  }, 300);
 
-    // Load GeoJSON
-    fetch('./PPKT.geojson')
-      .then(response => response.json())
-      .then(data => {
+  // ===============================
+  // LOAD GEOJSON
+  // ===============================
+  fetch("PPKT.geojson")
+    .then(res => {
+      if (!res.ok) throw new Error("GeoJSON tidak ditemukan");
+      return res.json();
+    })
+    .then(data => {
 
-        var geojsonLayer = L.geoJSON(data, {
-          style: {
-            color: "#1d3557",
-            weight: 1.5,
-            fillOpacity: 0.5
-          },
+      var geojsonLayer = L.geoJSON(data, {
 
-          onEachFeature: function (feature, layer) {
+        style: {
+          color: "#1d3557",
+          weight: 1.5,
+          fillOpacity: 0.5
+        },
 
-            let popupContent = "<b>Informasi Pulau</b><br><hr>";
+        onEachFeature: function (feature, layer) {
 
+          // 🔹 POPUP PER FEATURE (AMAN)
+          let popupContent = "<b>Informasi Pulau</b><hr>";
+
+          if (feature.properties) {
             for (let key in feature.properties) {
-              popupContent += `<b>${key}</b> : ${feature.properties[key]}<br>`;
+              popupContent +=
+                `<b>${key}</b> : ${feature.properties[key] ?? "-"}<br>`;
             }
-
-            layer.bindPopup(popupContent);
+          } else {
+            popupContent += "Tidak ada data atribut";
           }
-        }).addTo(map);
 
-        // Zoom ke semua pulau
-        map.fitBounds(geojsonLayer.getBounds());
-      })
-      .catch(error => {
-        console.error("Gagal memuat GeoJSON:", error);
-        alert("File GeoJSON tidak ditemukan atau error.");
-      });
-  </script>
+          layer.bindPopup(popupContent);
+
+          // 🔹 HOVER EFFECT (UNTUK CEK BIDANG BERBEDA)
+          layer.on({
+            mouseover: function (e) {
+              e.target.setStyle({
+                weight: 3,
+                color: "#e63946",
+                fillOpacity: 0.7
+              });
+            },
+            mouseout: function (e) {
+              geojsonLayer.resetStyle(e.target);
+            }
+          });
+        }
+      }).addTo(map);
+
+      map.fitBounds(geojsonLayer.getBounds());
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Gagal memuat GeoJSON");
+    });
+</script>
 
 </body>
 </html>
