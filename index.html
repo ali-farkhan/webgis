@@ -18,7 +18,6 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    /* HEADER */
     #header {
       height: 60px;
       background: #1d3557;
@@ -40,13 +39,11 @@
       font-weight: bold;
     }
 
-    /* MAP */
     #map {
       height: calc(100vh - 60px);
       width: 100%;
     }
 
-    /* POPUP */
     .leaflet-popup-content {
       font-size: 13px;
       line-height: 1.4;
@@ -56,13 +53,11 @@
 
 <body>
 
-<!-- HEADER -->
 <div id="header">
   <img src="LogoKKP.png" id="logo" alt="Logo KKP">
   <div id="title">Pulau-Pulau Kecil Terluar Indonesia</div>
 </div>
 
-<!-- MAP -->
 <div id="map"></div>
 
 <!-- Leaflet JS -->
@@ -70,13 +65,60 @@
 
 <script>
   // ===============================
-  // INISIALISASI PETA
+  // INISIALISASI MAP
   // ===============================
   var map = L.map('map').setView([-2.5, 118], 5);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // ===============================
+  // BASEMAPS
+  // ===============================
+
+  // OpenStreetMap
+  var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; OpenStreetMap contributors'
+  });
+
+  // Satellite (ESRI)
+  var esriSat = L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+      attribution: 'Tiles &copy; Esri'
+    }
+  );
+
+  // Terrain
+  var terrain = L.tileLayer(
+    'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    {
+      maxZoom: 17,
+      attribution: '&copy; OpenTopoMap'
+    }
+  );
+
+  // Dark Mode
+  var dark = L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    {
+      attribution: '&copy; CartoDB'
+    }
+  );
+
+  // Default basemap
+  osm.addTo(map);
+
+  // ===============================
+  // BASEMAP CONTROL
+  // ===============================
+  var baseMaps = {
+    "OpenStreetMap": osm,
+    "Satellite": esriSat,
+    "Terrain": terrain,
+    "Dark Mode": dark
+  };
+
+  L.control.layers(baseMaps, null, {
+    collapsed: false
   }).addTo(map);
 
   setTimeout(() => {
@@ -94,7 +136,6 @@
     .then(data => {
 
       var geojsonLayer = L.geoJSON(data, {
-
         style: {
           color: "#1d3557",
           weight: 1.5,
@@ -103,7 +144,6 @@
 
         onEachFeature: function (feature, layer) {
 
-          // 🔹 POPUP PER FEATURE (AMAN)
           let popupContent = "<b>Informasi Pulau</b><hr>";
 
           if (feature.properties) {
@@ -117,7 +157,6 @@
 
           layer.bindPopup(popupContent);
 
-          // 🔹 HOVER EFFECT (UNTUK CEK BIDANG BERBEDA)
           layer.on({
             mouseover: function (e) {
               e.target.setStyle({
