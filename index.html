@@ -114,7 +114,7 @@ L.control.layers({
 }).addTo(map);
 
 // ===============================
-// SEARCH GLOBAL (BEBAS LOKASI)
+// SEARCH GLOBAL
 // ===============================
 L.Control.geocoder({
   position: "topright",
@@ -138,20 +138,14 @@ var tagIcon = L.icon({
 var markerLayer = L.layerGroup().addTo(map);
 
 // ===============================
-// GEOJSON
+// LOAD GEOJSON (STABIL)
 // ===============================
-fetch("https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson?v=" + Date.now())
-  .then(res => res.text())
-  .then(text => {
-    console.log("ISI RESPONSE:", text);
-    JSON.parse(text); // test manual
-    L.geoJSON(JSON.parse(text)).addTo(map);
-  })
-  .catch(err => {
-    console.error("ERROR:", err);
-  });
+const geojsonURL =
+  "https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson?nocache=" + Date.now();
+
+fetch(geojsonURL)
   .then(res => {
-    if (!res.ok) throw new Error("Gagal load GeoJSON: " + res.status);
+    if (!res.ok) throw new Error("Gagal load GeoJSON (" + res.status + ")");
     return res.json();
   })
   .then(data => {
@@ -188,8 +182,9 @@ fetch("https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson?v=
         var center = layer.getBounds().getCenter();
 
         // Marker tag
-        var marker = L.marker(center, { icon: tagIcon }).addTo(markerLayer);
-        marker.bindPopup(popup);
+        L.marker(center, { icon: tagIcon })
+          .bindPopup(popup)
+          .addTo(markerLayer);
 
         // Label nama pulau
         var namaPulau = feature.properties.NAMA_PULAU || "Tanpa Nama";
