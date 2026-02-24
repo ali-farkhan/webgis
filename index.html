@@ -5,7 +5,12 @@
   <title>Pulau-Pulau Kecil Terluar Indonesia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+  <!-- Leaflet Search -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet-search@3.0.8/dist/leaflet-search.min.css"/>
 
   <style>
     html, body {
@@ -72,11 +77,16 @@
 
 <div id="map"></div>
 
+<!-- JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-search@3.0.8/dist/leaflet-search.min.js"></script>
 
 <script>
   var map = L.map('map').setView([-2.5, 118], 5);
 
+  // ===============================
+  // BASEMAP
+  // ===============================
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
   }).addTo(map);
@@ -103,6 +113,9 @@
     "Dark Mode": dark
   }).addTo(map);
 
+  // ===============================
+  // BUTTON LAYER
+  // ===============================
   var LayerButton = L.Control.extend({
     options: { position: 'bottomright' },
     onAdd: function () {
@@ -118,8 +131,19 @@
       return div;
     }
   });
-
   map.addControl(new LayerButton());
+
+  // ===============================
+  // ICON TAG / MARKER
+  // ===============================
+  var tagIcon = L.icon({
+    iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+    iconSize: [22, 22],
+    iconAnchor: [11, 22],
+    popupAnchor: [0, -20]
+  });
+
+  var markerLayer = L.layerGroup().addTo(map);
 
   // ===============================
   // GEOJSON
@@ -142,12 +166,10 @@
 
           let popup = "<b>Informasi Pulau</b><hr>";
 
-          // === ATRIBUT TABEL ===
           for (let k in feature.properties) {
             popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
           }
 
-          // === ADDITIONAL INFORMATION ===
           popup += `
             <hr>
             <b>Additional Information</b><br>
@@ -158,6 +180,19 @@
 
           layer.bindPopup(popup);
 
+          // === MARKER TAG (CENTROID) ===
+          var center = layer.getBounds().getCenter();
+          var marker = L.marker(center, {
+            icon: tagIcon,
+            title: feature.properties.NAMA_PULAU || ""
+          }).addTo(markerLayer);
+
+          marker.bindPopup(popup);
+
+          marker.on("click", function () {
+            map.fitBounds(layer.getBounds());
+          });
+
           layer.on({
             mouseover: e => e.target.setStyle({ color: "#e63946", weight: 3 }),
             mouseout: e => geojsonLayer.resetStyle(e.target)
@@ -166,6 +201,20 @@
       }).addTo(map);
 
       map.fitBounds(geojsonLayer.getBounds());
+
+      // ===============================
+      // SEARCH
+      // ===============================
+      var searchControl = new L.Control.Search({
+        layer: markerLayer,
+        propertyName: "title",
+        zoom: 9,
+        initial: false,
+        marker: false,
+        position: "topleft"
+      });
+
+      map.addControl(searchControl);
     });
 </script>
 
