@@ -26,6 +26,8 @@
       align-items: center;
       padding: 0 16px;
       border-bottom: 1px solid #ddd;
+      position: relative;
+      z-index: 1000;
     }
 
     #logo {
@@ -64,6 +66,11 @@
 
     .leaflet-control-layers {
       display: none;
+    }
+
+    /* 🔑 FIX SEARCH & CONTROL KETUTUP HEADER */
+    .leaflet-top {
+      top: 70px !important;
     }
   </style>
 </head>
@@ -137,7 +144,7 @@
   map.addControl(new LayerButton());
 
   // ===============================
-  // ICON TAG / MARKER
+  // ICON TAG
   // ===============================
   var tagIcon = L.icon({
     iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
@@ -175,15 +182,14 @@
 
           popup += `
             <hr>
-            <b>Additional Information</b><br>
             <a href="${additionalLink}" target="_blank">
-              Lihat detail di GeoJSON.io
+              🔗 Lihat detail di GeoJSON.io
             </a>
           `;
 
           layer.bindPopup(popup);
 
-          // === MARKER TAG (CENTROID) ===
+          // === MARKER CENTROID ===
           var center = layer.getBounds().getCenter();
           var marker = L.marker(center, {
             icon: tagIcon,
@@ -206,7 +212,7 @@
       map.fitBounds(geojsonLayer.getBounds());
 
       // ===============================
-      // SEARCH (POJOK KANAN ATAS)
+      // SEARCH (POJOK KANAN ATAS - FIX)
       // ===============================
       var searchControl = new L.Control.Search({
         layer: markerLayer,
