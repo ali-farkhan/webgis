@@ -1,78 +1,61 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Pulau-Pulau Kecil Terluar Indonesia</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Pulau-Pulau Kecil Terluar Indonesia</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <!-- Leaflet Search -->
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet-search@3.0.8/dist/leaflet-search.min.css"/>
+<!-- Leaflet Geocoder -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
 
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+<style>
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
 
-    #header {
-      height: 60px;
-      background: white;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      border-bottom: 1px solid #ddd;
-      position: relative;
-      z-index: 1000;
-    }
+#header {
+  height: 60px;
+  background: white;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #ddd;
+  position: relative;
+  z-index: 1000;
+}
 
-    #logo {
-      height: 40px;
-      margin-right: 15px;
-    }
+#logo {
+  height: 40px;
+  margin-right: 15px;
+}
 
-    #title {
-      flex: 1;
-      text-align: center;
-      font-size: 20px;
-      font-weight: bold;
-    }
+#title {
+  flex: 1;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+}
 
-    #map {
-      height: calc(100vh - 60px);
-      width: 100%;
-    }
+#map {
+  height: calc(100vh - 60px);
+  width: 100%;
+}
 
-    .layer-btn {
-      background: white;
-      width: 40px;
-      height: 40px;
-      border-radius: 6px;
-      box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+/* geser control leaflet ke bawah header */
+.leaflet-top {
+  top: 70px !important;
+}
 
-    .layer-btn img {
-      width: 24px;
-      height: 24px;
-    }
-
-    .leaflet-control-layers {
-      display: none;
-    }
-
-    /* 🔑 FIX SEARCH & CONTROL KETUTUP HEADER */
-    .leaflet-top {
-      top: 70px !important;
-    }
-  </style>
+/* pastikan geocoder tampil di atas */
+.leaflet-control-geocoder {
+  z-index: 2000 !important;
+}
+</style>
 </head>
 
 <body>
@@ -86,145 +69,111 @@
 
 <!-- JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-search@3.0.8/dist/leaflet-search.min.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
-  // ===============================
-  // MAP
-  // ===============================
-  var map = L.map('map').setView([-2.5, 118], 5);
+// ===============================
+// MAP
+// ===============================
+var map = L.map('map').setView([-2.5, 118], 5);
 
-  // ===============================
-  // BASEMAP
-  // ===============================
-  var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
+// ===============================
+// BASEMAP
+// ===============================
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap'
+}).addTo(map);
 
-  var sat = L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    { attribution: '© Esri' }
-  );
+var sat = L.tileLayer(
+  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  { attribution: '© Esri' }
+);
 
-  var terrain = L.tileLayer(
-    'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    { attribution: '© OpenTopoMap' }
-  );
+var terrain = L.tileLayer(
+  'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+  { attribution: '© OpenTopoMap' }
+);
 
-  var dark = L.tileLayer(
-    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    { attribution: '© CartoDB' }
-  );
+var dark = L.tileLayer(
+  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  { attribution: '© CartoDB' }
+);
 
-  L.control.layers({
-    "OpenStreetMap": osm,
-    "Satellite": sat,
-    "Terrain": terrain,
-    "Dark Mode": dark
-  }).addTo(map);
+L.control.layers({
+  "OpenStreetMap": osm,
+  "Satellite": sat,
+  "Terrain": terrain,
+  "Dark Mode": dark
+}).addTo(map);
 
-  // ===============================
-  // BUTTON LAYER
-  // ===============================
-  var LayerButton = L.Control.extend({
-    options: { position: 'bottomright' },
-    onAdd: function () {
-      var div = L.DomUtil.create('div', 'layer-btn');
-      div.innerHTML = '<img src="Layer.png">';
-      L.DomEvent.disableClickPropagation(div);
+// ===============================
+// SEARCH GLOBAL (BEBAS LOKASI)
+// ===============================
+L.Control.geocoder({
+  position: "topright",
+  defaultMarkGeocode: true,
+  placeholder: "Cari kota / lokasi / koordinat...",
+  errorMessage: "Lokasi tidak ditemukan"
+}).addTo(map);
 
-      div.onclick = function () {
-        var control = document.querySelector('.leaflet-control-layers');
-        control.style.display =
-          control.style.display === 'block' ? 'none' : 'block';
-      };
-      return div;
-    }
-  });
-  map.addControl(new LayerButton());
+// ===============================
+// ICON TAG
+// ===============================
+var tagIcon = L.icon({
+  iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+  iconSize: [22, 22],
+  iconAnchor: [11, 22],
+  popupAnchor: [0, -20]
+});
 
-  // ===============================
-  // ICON TAG
-  // ===============================
-  var tagIcon = L.icon({
-    iconUrl: "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-    iconSize: [22, 22],
-    iconAnchor: [11, 22],
-    popupAnchor: [0, -20]
-  });
+// ===============================
+// GEOJSON
+// ===============================
+var markerLayer = L.layerGroup().addTo(map);
 
-  var markerLayer = L.layerGroup().addTo(map);
+fetch("https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson")
+.then(res => res.json())
+.then(data => {
 
-  // ===============================
-  // GEOJSON
-  // ===============================
-  fetch("https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson")
-    .then(res => res.json())
-    .then(data => {
+  var geojsonLayer = L.geoJSON(data, {
+    style: {
+      color: "#1d3557",
+      weight: 1.5,
+      fillOpacity: 0.5
+    },
 
-      var geojsonLayer = L.geoJSON(data, {
-        style: {
-          color: "#1d3557",
-          weight: 1.5,
-          fillOpacity: 0.5
-        },
+    onEachFeature: function (feature, layer) {
 
-        onEachFeature: function (feature, layer) {
+      let popup = "<b>Informasi Pulau</b><hr>";
+      for (let k in feature.properties) {
+        popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
+      }
 
-          const additionalLink =
-            "https://geojson.io/#map=7.22/4.455/96.223";
+      popup += `
+        <hr>
+        <a href="https://geojson.io" target="_blank">
+          🔗 Buka di GeoJSON.io
+        </a>
+      `;
 
-          let popup = "<b>Informasi Pulau</b><hr>";
+      layer.bindPopup(popup);
 
-          for (let k in feature.properties) {
-            popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
-          }
+      var center = layer.getBounds().getCenter();
+      var marker = L.marker(center, {
+        icon: tagIcon
+      }).addTo(markerLayer);
 
-          popup += `
-            <hr>
-            <a href="${additionalLink}" target="_blank">
-              🔗 Lihat detail di GeoJSON.io
-            </a>
-          `;
+      marker.bindPopup(popup);
 
-          layer.bindPopup(popup);
-
-          // === MARKER CENTROID ===
-          var center = layer.getBounds().getCenter();
-          var marker = L.marker(center, {
-            icon: tagIcon,
-            title: feature.properties.NAMA_PULAU || ""
-          }).addTo(markerLayer);
-
-          marker.bindPopup(popup);
-
-          marker.on("click", function () {
-            map.fitBounds(layer.getBounds());
-          });
-
-          layer.on({
-            mouseover: e => e.target.setStyle({ color: "#e63946", weight: 3 }),
-            mouseout: e => geojsonLayer.resetStyle(e.target)
-          });
-        }
-      }).addTo(map);
-
-      map.fitBounds(geojsonLayer.getBounds());
-
-      // ===============================
-      // SEARCH (POJOK KANAN ATAS - FIX)
-      // ===============================
-      var searchControl = new L.Control.Search({
-        layer: markerLayer,
-        propertyName: "title",
-        zoom: 9,
-        initial: false,
-        marker: false,
-        position: "topright"
+      layer.on({
+        mouseover: e => e.target.setStyle({ color: "#e63946", weight: 3 }),
+        mouseout: e => geojsonLayer.resetStyle(e.target)
       });
+    }
+  }).addTo(map);
 
-      map.addControl(searchControl);
-    });
+  map.fitBounds(geojsonLayer.getBounds());
+});
 </script>
 
 </body>
