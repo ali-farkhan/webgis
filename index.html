@@ -5,7 +5,6 @@
   <title>Pulau-Pulau Kecil Terluar Indonesia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
   <style>
@@ -15,11 +14,9 @@
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    /* HEADER (PUTIH) */
     #header {
       height: 60px;
       background: white;
-      color: black;
       display: flex;
       align-items: center;
       padding: 0 16px;
@@ -36,7 +33,6 @@
       text-align: center;
       font-size: 20px;
       font-weight: bold;
-      color: black;
     }
 
     #map {
@@ -44,7 +40,6 @@
       width: 100%;
     }
 
-    /* BUTTON LAYER */
     .layer-btn {
       background: white;
       width: 40px;
@@ -62,7 +57,6 @@
       height: 24px;
     }
 
-    /* SEMBUNYIKAN DEFAULT CONTROL */
     .leaflet-control-layers {
       display: none;
     }
@@ -81,17 +75,11 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  // ===============================
-  // MAP
-  // ===============================
   var map = L.map('map').setView([-2.5, 118], 5);
 
-  // ===============================
-  // BASEMAPS
-  // ===============================
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap'
-  });
+  }).addTo(map);
 
   var sat = L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -108,23 +96,15 @@
     { attribution: '© CartoDB' }
   );
 
-  osm.addTo(map);
-
-  var baseMaps = {
+  L.control.layers({
     "OpenStreetMap": osm,
     "Satellite": sat,
     "Terrain": terrain,
     "Dark Mode": dark
-  };
+  }).addTo(map);
 
-  var layerControl = L.control.layers(baseMaps, null).addTo(map);
-
-  // ===============================
-  // CUSTOM BUTTON (KANAN BAWAH)
-  // ===============================
   var LayerButton = L.Control.extend({
     options: { position: 'bottomright' },
-
     onAdd: function () {
       var div = L.DomUtil.create('div', 'layer-btn');
       div.innerHTML = '<img src="Layer.png">';
@@ -135,7 +115,6 @@
         control.style.display =
           control.style.display === 'block' ? 'none' : 'block';
       };
-
       return div;
     }
   });
@@ -155,11 +134,26 @@
           weight: 1.5,
           fillOpacity: 0.5
         },
+
         onEachFeature: function (feature, layer) {
 
+          // >>> LINK TUJUAN (bisa kamu ganti nanti)
+          const geojsonLink =
+            "https://geojson.io/#map=7.22/4.455/96.223";
+
           let popup = "<b>Informasi Pulau</b><hr>";
+
           for (let k in feature.properties) {
-            popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
+
+            // >>> KHUSUS NAMA_PULAU JADI LINK
+            if (k === "NAMA_PULAU") {
+              popup += `<b>${k}</b> :
+                <a href="${geojsonLink}" target="_blank">
+                  ${feature.properties[k]}
+                </a><br>`;
+            } else {
+              popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
+            }
           }
 
           layer.bindPopup(popup);
