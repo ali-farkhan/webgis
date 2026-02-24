@@ -8,9 +8,6 @@
 <!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-<!-- Leaflet Geocoder -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
-
 <style>
 html, body {
   height: 100%;
@@ -46,14 +43,18 @@ html, body {
   width: 100%;
 }
 
-/* geser control leaflet ke bawah header */
-.leaflet-top {
-  top: 70px !important;
-}
-
-/* pastikan geocoder tampil di atas */
-.leaflet-control-geocoder {
-  z-index: 2000 !important;
+/* ===== LABEL NAMA PULAU ===== */
+.pulau-label {
+  background: rgba(255,255,255,0.9);
+  color: #000;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  border: 1px solid #555;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  transform: translate(-50%, -120%);
 }
 </style>
 </head>
@@ -69,7 +70,6 @@ html, body {
 
 <!-- JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
 // ===============================
@@ -80,40 +80,8 @@ var map = L.map('map').setView([-2.5, 118], 5);
 // ===============================
 // BASEMAP
 // ===============================
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap'
-}).addTo(map);
-
-var sat = L.tileLayer(
-  'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { attribution: '© Esri' }
-);
-
-var terrain = L.tileLayer(
-  'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-  { attribution: '© OpenTopoMap' }
-);
-
-var dark = L.tileLayer(
-  'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-  { attribution: '© CartoDB' }
-);
-
-L.control.layers({
-  "OpenStreetMap": osm,
-  "Satellite": sat,
-  "Terrain": terrain,
-  "Dark Mode": dark
-}).addTo(map);
-
-// ===============================
-// SEARCH GLOBAL (BEBAS LOKASI)
-// ===============================
-L.Control.geocoder({
-  position: "topright",
-  defaultMarkGeocode: true,
-  placeholder: "Cari kota / lokasi / koordinat...",
-  errorMessage: "Lokasi tidak ditemukan"
 }).addTo(map);
 
 // ===============================
@@ -129,8 +97,6 @@ var tagIcon = L.icon({
 // ===============================
 // GEOJSON
 // ===============================
-var markerLayer = L.layerGroup().addTo(map);
-
 fetch("https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson")
 .then(res => res.json())
 .then(data => {
@@ -148,22 +114,28 @@ fetch("https://raw.githubusercontent.com/ali-farkhan/webgis/main/PPKT.geojson")
       for (let k in feature.properties) {
         popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
       }
-
-      popup += `
-        <hr>
-        <a href="https://geojson.io" target="_blank">
-          🔗 Buka di GeoJSON.io
-        </a>
-      `;
-
       layer.bindPopup(popup);
 
+      // ===== CENTROID =====
       var center = layer.getBounds().getCenter();
-      var marker = L.marker(center, {
-        icon: tagIcon
-      }).addTo(markerLayer);
 
-      marker.bindPopup(popup);
+      // ===== MARKER ICON =====
+      L.marker(center, { icon: tagIcon }).addTo(map);
+
+      // ===== LABEL NAMA PULAU =====
+      var namaPulau = feature.properties.NAMA_PULAU || "Tanpa Nama";
+
+      var labelIcon = L.divIcon({
+        className: '',
+        html: `<div class="pulau-label">${namaPulau}</div>`,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
+
+      L.marker(center, {
+        icon: labelIcon,
+        interactive: false   // label tidak mengganggu klik
+      }).addTo(map);
 
       layer.on({
         mouseover: e => e.target.setStyle({ color: "#e63946", weight: 3 }),
