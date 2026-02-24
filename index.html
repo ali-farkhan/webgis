@@ -137,24 +137,24 @@
 
         onEachFeature: function (feature, layer) {
 
-          // >>> LINK TUJUAN (bisa kamu ganti nanti)
-          const geojsonLink =
+          const additionalLink =
             "https://geojson.io/#map=7.22/4.455/96.223";
 
           let popup = "<b>Informasi Pulau</b><hr>";
 
+          // === ATRIBUT TABEL ===
           for (let k in feature.properties) {
-
-            // >>> KHUSUS NAMA_PULAU JADI LINK
-            if (k === "NAMA_PULAU") {
-              popup += `<b>${k}</b> :
-                <a href="${geojsonLink}" target="_blank">
-                  ${feature.properties[k]}
-                </a><br>`;
-            } else {
-              popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
-            }
+            popup += `<b>${k}</b> : ${feature.properties[k] ?? "-"}<br>`;
           }
+
+          // === ADDITIONAL INFORMATION ===
+          popup += `
+            <hr>
+            <b>Additional Information</b><br>
+            <a href="${additionalLink}" target="_blank">
+              Lihat detail di GeoJSON.io
+            </a>
+          `;
 
           layer.bindPopup(popup);
 
