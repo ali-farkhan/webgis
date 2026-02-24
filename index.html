@@ -140,7 +140,7 @@ var markerLayer = L.layerGroup().addTo(map);
 // ===============================
 // GEOJSON
 // ===============================
-fetch("https://cdn.jsdelivr.net/gh/ali-farkhan/webgis@main/PPKT.geojson")
+fetch("https://cdn.jsdelivr.net/gh/ali-farkhan/webgis@main/PPKTV2.geojson")
   .then(res => {
     if (!res.ok) throw new Error("Gagal load GeoJSON: " + res.status);
     return res.json();
